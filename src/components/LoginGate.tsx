@@ -9,13 +9,33 @@ export default function LoginGate({ onLogin }: Props) {
   const [form, setForm] = useState({ name: '', wechat: '', purpose: '' })
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.wechat) return
-    setSubmitted(true)
-    // 保存登录状态
-    localStorage.setItem('oc-academy-user', JSON.stringify(form))
-    onLogin({ name: form.name })
+    
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          wechat: form.wechat,
+          purpose: form.purpose
+        })
+      })
+      
+      if (res.ok) {
+        setSubmitted(true)
+        // 保存登录状态
+        localStorage.setItem('oc-academy-user', JSON.stringify(form))
+        onLogin({ name: form.name })
+      } else {
+        alert('注册失败，请重试')
+      }
+    } catch (error) {
+      console.error('注册错误:', error)
+      alert('注册失败，请重试')
+    }
   }
 
   if (submitted) {
